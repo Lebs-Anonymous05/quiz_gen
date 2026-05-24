@@ -1,2 +1,32 @@
 # quiz_gen
 AI-Powered Quiz Generator from Lecture Notes
+
+## Project Description
+A web-based platform that accepts lecture notes and generates AI-powered quizzes using NLP. Built with Flask, PostgreSQL, and integrated with Claude/OpenAI API.
+
+## Tech Stack
+- **Frontend:** HTML, Tailwind CSS, JavaScript
+- **Backend:** Python 3.11, Flask, SQLAlchemy, PyMuPDF
+- **Database:** PostgreSQL (production), SQLite (development)
+- **AI/ML:** Claude API / OpenAI GPT-4
+- **DevOps:** GitHub, Docker, CircleCI, Render
+
+## Project Structure
+quiz_gen/
+├── frontend/
+├── backend/
+│   ├── app/
+│   │   ├── routes/
+│   │   ├── models/
+│   │   └── services/
+│   └── tests/
+├── docs/
+└── docker-compose.yml
+
+## Progress Log
+### ✅ Step 1 — GitHub Setup (Done)
+- Repository created with main and develop branches
+- Folder structure initialized
+- DevOps tools: GitHub, Docker, CircleCI, Render
+
+### 🔄 Step 2 — SRS Document
