@@ -30,3 +30,4 @@ quiz_gen/
 - DevOps tools: GitHub, Docker, CircleCI, Render
 
 ### 🔄 Step 2 — SRS Document
+[View SRS Document](docs/SRS.md)
