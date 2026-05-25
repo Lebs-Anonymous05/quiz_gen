@@ -41,4 +41,9 @@ quiz_gen/
 - Auth, Quiz, and Attempt routes registered
 - Registration endpoint tested and working
 
-### 🔄 Step 5 — Frontend Scaffold (In Progress)
+### ✅ Step 5 — Frontend Scaffold (Done)
+- 6 pages built: Landing, Login, Dashboard, Upload, Quiz, Results
+- Tailwind CSS styling throughout
+- Auth guard and JWT token handling on all protected pages
+
+### 🔄 Step 6 — Claude API Integration (In Progress)
