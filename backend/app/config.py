@@ -26,11 +26,10 @@ class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
 
 class TestingConfig(Config):
-    """Testing configuration — uses in-memory SQLite."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-    JWT_SECRET_KEY = "test-jwt-secret"
-    SECRET_KEY = "test-secret"
+    JWT_SECRET_KEY = "test-jwt-secret-key-that-is-long-enough-32chars"
+    SECRET_KEY = "test-secret-key-that-is-long-enough-32chars"
 
 config = {
     "development": DevelopmentConfig,
