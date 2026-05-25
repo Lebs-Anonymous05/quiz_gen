@@ -2,7 +2,7 @@
 AI-Powered Quiz Generator from Lecture Notes
 
 ## Project Description
-A web-based platform that accepts lecture notes and generates AI-powered quizzes using NLP. Built with Flask, PostgreSQL, and integrated with Claude/OpenAI API.
+A web-based platform that accepts lecture notes and generates AI-powered quizzes using NLP. Built with Flask, PostgreSQL, and integrated with Claude/OpenAI/groq API.
 
 ## Tech Stack
 - **Frontend:** HTML, Tailwind CSS, JavaScript
@@ -46,4 +46,10 @@ quiz_gen/
 - Tailwind CSS styling throughout
 - Auth guard and JWT token handling on all protected pages
 
-### 🔄 Step 6 — Claude API Integration (In Progress)
+### ✅ Step 6 — AI Integration (Done)
+- Groq API integrated (LLaMA 3.3 70B model)
+- Quiz generation working end to end
+- PDF text extraction ready via PyMuPDF
+- Mock fallback available for offline testing
+
+### 🔄 Step 7 — Testing (In Progress)
