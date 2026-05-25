@@ -31,3 +31,6 @@ quiz_gen/
 
 ### 🔄 Step 2 — SRS Document
 [View SRS Document](docs/SRS.md)
+
+### ✅ Step 3 — System Design (Done)
+- [View System Design](docs/SYSTEM_DESIGN.md)
