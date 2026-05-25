@@ -34,3 +34,11 @@ quiz_gen/
 
 ### ✅ Step 3 — System Design (Done)
 - [View System Design](docs/SYSTEM_DESIGN.md)
+
+### ✅ Step 4 — Backend Scaffold (Done)
+- Flask app running on port 5000
+- Database models: User, Quiz, Question, Attempt
+- Auth, Quiz, and Attempt routes registered
+- Registration endpoint tested and working
+
+### 🔄 Step 5 — Frontend Scaffold (In Progress)
