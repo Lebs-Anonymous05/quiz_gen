@@ -24,16 +24,21 @@
       <p id="scoreLabel" class="text-xl font-semibold mb-2"></p>
       <p id="scoreSummary" class="text-gray-400 text-sm mb-6"></p>
       <p id="timeTaken" class="text-gray-600 text-sm mb-8"></p>
-      <div class="flex justify-center gap-4">
+      <div class="flex justify-center gap-4 flex-wrap">
         <a href="dashboard.html"
-          class="border border-gray-700 hover:border-gray-500 text-gray-300 px-6 py-3 rounded-lg transition">
-          Back to Dashboard
+            class="border border-gray-700 hover:border-gray-500 text-gray-300 px-6 py-3 rounded-lg transition">
+            Back to Dashboard
         </a>
+        <button onclick="generateMore()"
+            id="moreBtn"
+            class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold transition">
+            🔄 More Questions
+        </button>
         <a href="upload.html"
-          class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-semibold transition">
-          New Quiz
+            class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-semibold transition">
+            New Quiz
         </a>
-      </div>
+    </div>
     </div>
 
     <!-- Question Breakdown -->
@@ -47,6 +52,7 @@
     if (!resultsRaw) window.location.href = "dashboard.html";
 
     const results = JSON.parse(resultsRaw);
+    
     const { score, correct, total, results: breakdown, questions, timeTaken } = results;
 
     // Score display
@@ -116,6 +122,46 @@
         </div>
       `;
     }).join("");
+
+const API = "http://127.0.0.1:5000/api";
+const token = localStorage.getItem("token");
+const quizId = parseInt(results.quiz_id);
+
+async function generateMore() {
+  console.log("results object:", results);
+  console.log("quizId:", quizId);
+  const btn = document.getElementById("moreBtn");
+
+  try {
+    const res = await fetch(`${API}/quiz/${quizId}/more`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        title: `${results.title || "Quiz"} (More Questions)`,
+        question_count: total,
+        question_types: [...new Set((questions || []).map(q => q.type))]
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || "Failed to generate more questions.");
+      btn.textContent = "🔄 More Questions";
+      btn.disabled = false;
+      return;
+    }
+
+    // Store new quiz results structure and go to quiz page
+    window.location.href = `quiz.html?id=${data.quiz_id}`;
+  } catch {
+    alert("Could not connect to server.");
+    btn.textContent = "🔄 More Questions";
+    btn.disabled = false;
+  }
+}
   </script>
 
 </body>

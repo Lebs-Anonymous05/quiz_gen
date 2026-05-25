@@ -80,7 +80,7 @@
     if (!token) window.location.href = "login.html";
 
     const params = new URLSearchParams(window.location.search);
-    const quizId = params.get("id");
+    const quizId = parseInt(params.get("id"));
     if (!quizId) window.location.href = "dashboard.html";
 
     let questions = [];
@@ -155,9 +155,9 @@
         shortAnswerContainer.classList.add("hidden");
         optionsContainer.classList.remove("hidden");
         optionsContainer.innerHTML = q.options.map(option => `
-          <button onclick="selectOption(${q.id}, '${option.charAt(0)}')"
+          <button onclick="selectOption(${q.id}, '${q.type === 'true_false' ? option : option.charAt(0)}')"
             class="option-btn w-full text-left px-5 py-4 rounded-xl border transition
-              ${userAnswers[q.id] === option.charAt(0)
+              ${userAnswers[q.id] === (q.type === 'true_false' ? option : option.charAt(0))
                 ? 'border-indigo-500 bg-indigo-900 text-white'
                 : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-500'}">
             ${option}
@@ -227,11 +227,13 @@
           return;
         }
 
+       
         // Store results and redirect
         localStorage.setItem("quizResults", JSON.stringify({
-          ...data,
-          questions: questions,
-          timeTaken: timeTaken
+            ...data,
+            quiz_id: quizId,
+            questions: questions,
+            timeTaken: timeTaken
         }));
         window.location.href = "results.html";
       } catch {

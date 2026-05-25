@@ -172,42 +172,75 @@
       }
     }
 
-    async function generateQuiz() {
-      document.getElementById("errorMsg").classList.add("hidden");
+async function generateQuiz() {
+  document.getElementById("errorMsg").classList.add("hidden");
 
-      const title = document.getElementById("quizTitle").value.trim();
-      const sourceText = document.getElementById("sourceText").value.trim();
-      const questionCount = parseInt(document.getElementById("questionCount").value);
+  const title = document.getElementById("quizTitle").value.trim();
+  const questionCount = parseInt(document.getElementById("questionCount").value);
+  const isPdf = !document.getElementById("pdfInput").classList.contains("hidden");
 
-      const questionTypes = [];
-      if (document.getElementById("typeMcq").checked) questionTypes.push("mcq");
-      if (document.getElementById("typeTf").checked) questionTypes.push("true_false");
-      if (document.getElementById("typeSa").checked) questionTypes.push("short_answer");
+  const questionTypes = [];
+  if (document.getElementById("typeMcq").checked) questionTypes.push("mcq");
+  if (document.getElementById("typeTf").checked) questionTypes.push("true_false");
+  if (document.getElementById("typeSa").checked) questionTypes.push("short_answer");
 
-      if (!title) return showError("Please enter a quiz title.");
-      if (!sourceText) return showError("Please paste your lecture notes.");
-      if (questionTypes.length === 0) return showError("Please select at least one question type.");
+  if (!title) return showError("Please enter a quiz title.");
+  if (questionTypes.length === 0) return showError("Please select at least one question type.");
 
-      setLoading(true);
+  setLoading(true);
 
-      try {
-        const res = await fetch(`${API}/quiz/generate`, {
-          method: "POST",
-          headers: authHeaders(),
-          body: JSON.stringify({ title, source_text: sourceText, question_count: questionCount, question_types: questionTypes })
+  try {
+    let res, data;
+
+    if (isPdf) {
+        const pdfFile = document.getElementById("pdfFile").files[0];
+        if (!pdfFile) { setLoading(false); return showError("Please select a PDF file."); }
+
+        const formData = new FormData();
+        formData.append("lecture_note", pdfFile);
+
+        // Step 1: Extract text from PDF
+        const uploadRes = await fetch(`${API}/quiz/upload`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData
         });
-        const data = await res.json();
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) { setLoading(false); return showError(uploadData.error || "PDF extraction failed."); }
 
-        if (!res.ok) return showError(data.error || "Quiz generation failed.");
+        // Step 2: Generate quiz from extracted text
+        res = await fetch(`${API}/quiz/generate`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({
+                title,
+                source_text: uploadData.text,
+                question_count: questionCount,
+                question_types: questionTypes
+            })
+        });
+    } else {
+      // Text input path
+      const sourceText = document.getElementById("sourceText").value.trim();
+      if (!sourceText) return showError("Please paste your lecture notes.");
 
-        // Redirect to quiz page
-        window.location.href = `quiz.html?id=${data.quiz_id}`;
-      } catch {
-        showError("Could not connect to server. Is the backend running?");
-      } finally {
-        setLoading(false);
-      }
+      res = await fetch(`${API}/quiz/generate`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ title, source_text: sourceText, question_count: questionCount, question_types: questionTypes })
+      });
     }
+
+    data = await res.json();
+    if (!res.ok) return showError(data.error || "Quiz generation failed.");
+
+    window.location.href = `quiz.html?id=${data.quiz_id}`;
+  } catch {
+    showError("Could not connect to server. Is the backend running?");
+  } finally {
+    setLoading(false);
+  }
+}
   </script>
 
 </body>

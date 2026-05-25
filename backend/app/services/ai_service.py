@@ -3,6 +3,13 @@ import json
 import random
 from groq import Groq
 
+def truncate_text(text: str, max_words: int = 1500) -> str:
+    """Truncate text to stay within Groq's token limits."""
+    words = text.split()
+    if len(words) > max_words:
+        return " ".join(words[:max_words])
+    return text
+
 # Set this to True when you have a real API key
 USE_REAL_API = True
 
@@ -31,6 +38,7 @@ def _generate_with_groq(source_text: str, question_count: int, question_types: l
     client = Groq(api_key=os.getenv("API_KEY"))
 
     types_str = ", ".join(question_types)
+    source_text = truncate_text(source_text)
 
     prompt = f"""You are a quiz generator. Given the lecture notes below, generate exactly {question_count} questions.
 

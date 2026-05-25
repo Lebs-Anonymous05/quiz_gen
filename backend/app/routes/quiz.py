@@ -126,6 +126,57 @@ def get_quiz(quiz_id):
         "questions": [q.to_dict() for q in quiz.questions]
     }), 200
 
+@quiz_bp.route("/<int:quiz_id>/more", methods=["POST"])
+@jwt_required()
+def generate_more(quiz_id):
+    """Generate a new quiz from the same source text as an existing quiz."""
+    user_id = get_jwt_identity()
+    original_quiz = Quiz.query.filter_by(id=quiz_id, user_id=user_id).first()
+
+    if not original_quiz:
+        return jsonify({"error": "Quiz not found"}), 404
+
+    data = request.get_json()
+    question_count = data.get("question_count", 10)
+    question_types = data.get("question_types", ["mcq"])
+    title = data.get("title", f"{original_quiz.title} (Part 2)")
+
+    try:
+        raw_questions = generate_quiz(original_quiz.source_text, question_count, question_types)
+
+        quiz = Quiz(
+            user_id=user_id,
+            title=title,
+            source_text=original_quiz.source_text,
+            question_count=len(raw_questions)
+        )
+        db.session.add(quiz)
+        db.session.flush()
+
+        for index, q in enumerate(raw_questions):
+            question = Question(
+                quiz_id=quiz.id,
+                question_type=q.get("type", "mcq"),
+                question_text=q.get("question", ""),
+                options=q.get("options"),
+                correct_answer=q.get("correct_answer", ""),
+                explanation=q.get("explanation", ""),
+                order_index=index
+            )
+            db.session.add(question)
+
+        db.session.commit()
+
+        return jsonify({
+            "quiz_id": quiz.id,
+            "title": quiz.title,
+            "questions": [q.to_dict() for q in quiz.questions]
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Quiz generation failed: {str(e)}"}), 500
+
 
 @quiz_bp.route("/<int:quiz_id>", methods=["DELETE"])
 @jwt_required()
