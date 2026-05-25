@@ -52,4 +52,8 @@ quiz_gen/
 - PDF text extraction ready via PyMuPDF
 - Mock fallback available for offline testing
 
-### 🔄 Step 7 — Testing (In Progress)
+### ✅ Step 7 — Testing (Done)
+- 8/8 pytest tests passing
+- Auth tests: register, duplicate email, login, wrong password
+- Quiz tests: generate, get all, get by id, delete
+- In-memory SQLite used for test isolation
