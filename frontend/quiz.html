@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizGen — Take Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-8 py-5 border-b border-gray-800">
+    <a href="dashboard.html" class="text-2xl font-bold text-indigo-400">QuizGen</a>
+    <div class="flex items-center gap-4">
+      <span id="timerDisplay" class="text-gray-400 text-sm font-mono"></span>
+      <a href="dashboard.html" class="text-gray-400 hover:text-white text-sm transition">← Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="flex-1 flex flex-col items-center justify-center">
+    <div class="inline-block w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-gray-400">Loading quiz...</p>
+  </div>
+
+  <!-- Quiz Content -->
+  <main id="quizContent" class="hidden flex-1 px-8 py-10 max-w-3xl mx-auto w-full">
+
+    <!-- Quiz Header -->
+    <div class="mb-8">
+      <h2 id="quizTitle" class="text-3xl font-bold mb-2"></h2>
+      <div class="flex items-center gap-4 text-sm text-gray-400">
+        <span id="questionCounter"></span>
+        <div class="flex-1 bg-gray-800 rounded-full h-2">
+          <div id="progressBar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-6">
+      <p id="questionType" class="text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3"></p>
+      <p id="questionText" class="text-xl font-semibold mb-6"></p>
+
+      <!-- Options -->
+      <div id="optionsContainer" class="flex flex-col gap-3"></div>
+
+      <!-- Short Answer Input -->
+      <div id="shortAnswerContainer" class="hidden">
+        <textarea id="shortAnswerInput" rows="3"
+          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 resize-none"
+          placeholder="Type your answer here..."></textarea>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex justify-between items-center">
+      <button onclick="prevQuestion()"
+        id="prevBtn"
+        class="border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white px-6 py-3 rounded-lg transition">
+        ← Previous
+      </button>
+      <button onclick="nextQuestion()"
+        id="nextBtn"
+        class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-semibold transition">
+        Next →
+      </button>
+      <button onclick="submitQuiz()"
+        id="submitBtn"
+        class="hidden bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-lg font-semibold transition">
+        Submit Quiz ✓
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    const API = "http://127.0.0.1:5000/api";
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "login.html";
+
+    const params = new URLSearchParams(window.location.search);
+    const quizId = params.get("id");
+    if (!quizId) window.location.href = "dashboard.html";
+
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = {};
+    let startTime = Date.now();
+    let timerInterval = null;
+
+    function authHeaders() {
+      return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      };
+    }
+
+    // Timer
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const mins = Math.floor(elapsed / 60).toString().padStart(2, "0");
+        const secs = (elapsed % 60).toString().padStart(2, "0");
+        document.getElementById("timerDisplay").textContent = `⏱ ${mins}:${secs}`;
+      }, 1000);
+    }
+
+    async function loadQuiz() {
+      try {
+        const res = await fetch(`${API}/quiz/${quizId}`, { headers: authHeaders() });
+        const data = await res.json();
+
+        if (!res.ok) {
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        questions = data.questions;
+        document.getElementById("quizTitle").textContent = data.title;
+        document.getElementById("loadingState").classList.add("hidden");
+        document.getElementById("quizContent").classList.remove("hidden");
+
+        startTimer();
+        renderQuestion();
+      } catch {
+        window.location.href = "dashboard.html";
+      }
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      const total = questions.length;
+
+      // Update counter and progress
+      document.getElementById("questionCounter").textContent = `Question ${currentIndex + 1} of ${total}`;
+      document.getElementById("progressBar").style.width = `${((currentIndex + 1) / total) * 100}%`;
+
+      // Question type label
+      const typeLabels = { mcq: "Multiple Choice", true_false: "True / False", short_answer: "Short Answer" };
+      document.getElementById("questionType").textContent = typeLabels[q.type] || q.type;
+
+      // Question text
+      document.getElementById("questionText").textContent = q.question;
+
+      // Options
+      const optionsContainer = document.getElementById("optionsContainer");
+      const shortAnswerContainer = document.getElementById("shortAnswerContainer");
+
+      if (q.type === "short_answer") {
+        optionsContainer.classList.add("hidden");
+        shortAnswerContainer.classList.remove("hidden");
+        document.getElementById("shortAnswerInput").value = userAnswers[q.id] || "";
+      } else {
+        shortAnswerContainer.classList.add("hidden");
+        optionsContainer.classList.remove("hidden");
+        optionsContainer.innerHTML = q.options.map(option => `
+          <button onclick="selectOption(${q.id}, '${option.charAt(0)}')"
+            class="option-btn w-full text-left px-5 py-4 rounded-xl border transition
+              ${userAnswers[q.id] === option.charAt(0)
+                ? 'border-indigo-500 bg-indigo-900 text-white'
+                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-500'}">
+            ${option}
+          </button>
+        `).join("");
+      }
+
+      // Navigation buttons
+      document.getElementById("prevBtn").disabled = currentIndex === 0;
+      document.getElementById("prevBtn").classList.toggle("opacity-40", currentIndex === 0);
+
+      if (currentIndex === total - 1) {
+        document.getElementById("nextBtn").classList.add("hidden");
+        document.getElementById("submitBtn").classList.remove("hidden");
+      } else {
+        document.getElementById("nextBtn").classList.remove("hidden");
+        document.getElementById("submitBtn").classList.add("hidden");
+      }
+    }
+
+    function selectOption(questionId, answer) {
+      userAnswers[questionId] = answer;
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      saveShortAnswer();
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      saveShortAnswer();
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      }
+    }
+
+    function saveShortAnswer() {
+      const q = questions[currentIndex];
+      if (q.type === "short_answer") {
+        userAnswers[q.id] = document.getElementById("shortAnswerInput").value.trim();
+      }
+    }
+
+    async function submitQuiz() {
+      saveShortAnswer();
+      clearInterval(timerInterval);
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+      try {
+        const res = await fetch(`${API}/attempt/${quizId}`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            answers: userAnswers,
+            time_taken: timeTaken
+          })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert("Failed to submit quiz. Please try again.");
+          return;
+        }
+
+        // Store results and redirect
+        localStorage.setItem("quizResults", JSON.stringify({
+          ...data,
+          questions: questions,
+          timeTaken: timeTaken
+        }));
+        window.location.href = "results.html";
+      } catch {
+        alert("Could not connect to server.");
+      }
+    }
+
+    loadQuiz();
+  </script>
+
+</body>
+</html>

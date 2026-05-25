@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizGen — Generate Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-8 py-5 border-b border-gray-800">
+    <a href="dashboard.html" class="text-2xl font-bold text-indigo-400">QuizGen</a>
+    <a href="dashboard.html" class="text-gray-400 hover:text-white text-sm transition">← Back to Dashboard</a>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 px-8 py-10 max-w-3xl mx-auto w-full">
+    <h2 class="text-3xl font-bold mb-2">Generate a Quiz</h2>
+    <p class="text-gray-400 mb-8">Paste your lecture notes or upload a PDF and let AI do the rest.</p>
+
+    <!-- Error Message -->
+    <div id="errorMsg" class="hidden bg-red-900 border border-red-700 text-red-300 text-sm px-4 py-3 rounded-lg mb-6"></div>
+
+    <!-- Form -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 flex flex-col gap-6">
+
+      <!-- Quiz Title -->
+      <div>
+        <label class="block text-sm text-gray-400 mb-1">Quiz Title</label>
+        <input type="text" id="quizTitle"
+          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+          placeholder="e.g. Introduction to Operating Systems"/>
+      </div>
+
+      <!-- Input Method Tabs -->
+      <div>
+        <div class="flex bg-gray-800 rounded-lg p-1 mb-4 w-fit">
+          <button id="textTab" onclick="showInput('text')"
+            class="px-4 py-2 rounded-md text-sm font-semibold transition bg-indigo-600 text-white">
+            Paste Text
+          </button>
+          <button id="pdfTab" onclick="showInput('pdf')"
+            class="px-4 py-2 rounded-md text-sm font-semibold transition text-gray-400 hover:text-white">
+            Upload PDF
+          </button>
+        </div>
+
+        <!-- Text Input -->
+        <div id="textInput">
+          <label class="block text-sm text-gray-400 mb-1">Lecture Notes</label>
+          <textarea id="sourceText" rows="8"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 resize-none"
+            placeholder="Paste your lecture notes here..."></textarea>
+        </div>
+
+        <!-- PDF Input -->
+        <div id="pdfInput" class="hidden">
+          <label class="block text-sm text-gray-400 mb-1">Upload PDF (max 10MB)</label>
+          <div class="border-2 border-dashed border-gray-700 rounded-xl p-10 text-center hover:border-indigo-500 transition cursor-pointer"
+            onclick="document.getElementById('pdfFile').click()">
+            <p class="text-4xl mb-3">📄</p>
+            <p class="text-gray-400 text-sm" id="pdfLabel">Click to select a PDF file</p>
+            <input type="file" id="pdfFile" accept=".pdf" class="hidden" onchange="handlePdfSelect(event)"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Settings -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Number of Questions</label>
+          <select id="questionCount"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+            <option value="5">5 questions</option>
+            <option value="10" selected>10 questions</option>
+            <option value="15">15 questions</option>
+            <option value="20">20 questions</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-400 mb-3">Question Types</label>
+          <div class="flex flex-col gap-2">
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="typeMcq" checked class="accent-indigo-500"/> Multiple Choice
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="typeTf" checked class="accent-indigo-500"/> True / False
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="typeSa" class="accent-indigo-500"/> Short Answer
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <button onclick="generateQuiz()"
+        id="generateBtn"
+        class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-xl font-bold text-lg transition">
+        ✨ Generate Quiz
+      </button>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="hidden text-center py-6">
+        <div class="inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-gray-400">Claude AI is generating your quiz...</p>
+        <p class="text-gray-600 text-sm mt-1">This may take up to 15 seconds</p>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const API = "http://127.0.0.1:5000/api";
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "login.html";
+
+    function authHeaders() {
+      return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      };
+    }
+
+    function showInput(type) {
+      const textInput = document.getElementById("textInput");
+      const pdfInput = document.getElementById("pdfInput");
+      const textTab = document.getElementById("textTab");
+      const pdfTab = document.getElementById("pdfTab");
+
+      if (type === "text") {
+        textInput.classList.remove("hidden");
+        pdfInput.classList.add("hidden");
+        textTab.classList.add("bg-indigo-600", "text-white");
+        textTab.classList.remove("text-gray-400");
+        pdfTab.classList.remove("bg-indigo-600", "text-white");
+        pdfTab.classList.add("text-gray-400");
+      } else {
+        pdfInput.classList.remove("hidden");
+        textInput.classList.add("hidden");
+        pdfTab.classList.add("bg-indigo-600", "text-white");
+        pdfTab.classList.remove("text-gray-400");
+        textTab.classList.remove("bg-indigo-600", "text-white");
+        textTab.classList.add("text-gray-400");
+      }
+    }
+
+    function handlePdfSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        document.getElementById("pdfLabel").textContent = `Selected: ${file.name}`;
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("errorMsg");
+      el.textContent = msg;
+      el.classList.remove("hidden");
+    }
+
+    function setLoading(loading) {
+      const btn = document.getElementById("generateBtn");
+      const loadingState = document.getElementById("loadingState");
+      if (loading) {
+        btn.classList.add("hidden");
+        loadingState.classList.remove("hidden");
+      } else {
+        btn.classList.remove("hidden");
+        loadingState.classList.add("hidden");
+      }
+    }
+
+    async function generateQuiz() {
+      document.getElementById("errorMsg").classList.add("hidden");
+
+      const title = document.getElementById("quizTitle").value.trim();
+      const sourceText = document.getElementById("sourceText").value.trim();
+      const questionCount = parseInt(document.getElementById("questionCount").value);
+
+      const questionTypes = [];
+      if (document.getElementById("typeMcq").checked) questionTypes.push("mcq");
+      if (document.getElementById("typeTf").checked) questionTypes.push("true_false");
+      if (document.getElementById("typeSa").checked) questionTypes.push("short_answer");
+
+      if (!title) return showError("Please enter a quiz title.");
+      if (!sourceText) return showError("Please paste your lecture notes.");
+      if (questionTypes.length === 0) return showError("Please select at least one question type.");
+
+      setLoading(true);
+
+      try {
+        const res = await fetch(`${API}/quiz/generate`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ title, source_text: sourceText, question_count: questionCount, question_types: questionTypes })
+        });
+        const data = await res.json();
+
+        if (!res.ok) return showError(data.error || "Quiz generation failed.");
+
+        // Redirect to quiz page
+        window.location.href = `quiz.html?id=${data.quiz_id}`;
+      } catch {
+        showError("Could not connect to server. Is the backend running?");
+      } finally {
+        setLoading(false);
+      }
+    }
+  </script>
+
+</body>
+</html>

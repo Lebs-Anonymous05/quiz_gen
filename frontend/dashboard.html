@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizGen — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-8 py-5 border-b border-gray-800">
+    <h1 class="text-2xl font-bold text-indigo-400">QuizGen</h1>
+    <div class="flex items-center gap-6">
+      <span id="welcomeMsg" class="text-gray-400 text-sm"></span>
+      <a href="upload.html" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition text-sm font-semibold">
+        + New Quiz
+      </a>
+      <button onclick="logout()" class="text-gray-400 hover:text-white text-sm transition">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 px-8 py-10 max-w-5xl mx-auto w-full">
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <p class="text-gray-400 text-sm mb-1">Total Quizzes</p>
+        <p id="totalQuizzes" class="text-4xl font-bold text-indigo-400">0</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <p class="text-gray-400 text-sm mb-1">Total Attempts</p>
+        <p id="totalAttempts" class="text-4xl font-bold text-indigo-400">0</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <p class="text-gray-400 text-sm mb-1">Average Score</p>
+        <p id="avgScore" class="text-4xl font-bold text-indigo-400">—</p>
+      </div>
+    </div>
+
+    <!-- Quizzes Section -->
+    <div class="mb-10">
+      <h2 class="text-xl font-bold mb-6">My Quizzes</h2>
+      <div id="quizList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Populated by JS -->
+      </div>
+      <div id="noQuizzes" class="hidden text-center py-16 text-gray-600">
+        <p class="text-5xl mb-4">📝</p>
+        <p class="text-lg">No quizzes yet.</p>
+        <a href="upload.html" class="text-indigo-400 hover:underline mt-2 inline-block">Generate your first quiz</a>
+      </div>
+    </div>
+
+    <!-- Recent Attempts Section -->
+    <div>
+      <h2 class="text-xl font-bold mb-6">Recent Attempts</h2>
+      <div id="attemptList" class="flex flex-col gap-3">
+        <!-- Populated by JS -->
+      </div>
+      <div id="noAttempts" class="hidden text-center py-10 text-gray-600">
+        <p>No attempts yet. Take a quiz to see your results here.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API = "http://127.0.0.1:5000/api";
+
+    // Auth guard
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!token) window.location.href = "login.html";
+
+    // Welcome message
+    document.getElementById("welcomeMsg").textContent = `Hi, ${user.full_name || "User"}`;
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "login.html";
+    }
+
+    function authHeaders() {
+      return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      };
+    }
+
+    async function loadQuizzes() {
+      try {
+        const res = await fetch(`${API}/quiz/`, { headers: authHeaders() });
+        const data = await res.json();
+        const quizzes = data.quizzes || [];
+
+        document.getElementById("totalQuizzes").textContent = quizzes.length;
+
+        const list = document.getElementById("quizList");
+        const empty = document.getElementById("noQuizzes");
+
+        if (quizzes.length === 0) {
+          empty.classList.remove("hidden");
+          return;
+        }
+
+        list.innerHTML = quizzes.map(q => `
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 flex flex-col gap-3">
+            <div>
+              <h3 class="font-semibold text-lg">${q.title}</h3>
+              <p class="text-gray-400 text-sm">${q.question_count} questions &bull; ${new Date(q.created_at).toLocaleDateString()}</p>
+            </div>
+            <div class="flex gap-3 mt-2">
+              <a href="quiz.html?id=${q.id}"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                Take Quiz
+              </a>
+              <button onclick="deleteQuiz(${q.id})"
+                class="border border-gray-700 hover:border-red-600 text-gray-400 hover:text-red-400 px-4 py-2 rounded-lg text-sm transition">
+                Delete
+              </button>
+            </div>
+          </div>
+        `).join("");
+      } catch {
+        console.error("Failed to load quizzes");
+      }
+    }
+
+    async function loadAttempts() {
+      try {
+        const res = await fetch(`${API}/attempt/history`, { headers: authHeaders() });
+        const data = await res.json();
+        const attempts = data.attempts || [];
+
+        document.getElementById("totalAttempts").textContent = attempts.length;
+
+        if (attempts.length > 0) {
+          const avg = attempts.reduce((sum, a) => sum + a.score, 0) / attempts.length;
+          document.getElementById("avgScore").textContent = `${avg.toFixed(1)}%`;
+        }
+
+        const list = document.getElementById("attemptList");
+        const empty = document.getElementById("noAttempts");
+
+        if (attempts.length === 0) {
+          empty.classList.remove("hidden");
+          return;
+        }
+
+        list.innerHTML = attempts.slice(0, 5).map(a => `
+          <div class="bg-gray-900 border border-gray-800 rounded-xl px-6 py-4 flex justify-between items-center">
+            <div>
+              <p class="font-semibold">${a.quiz_title}</p>
+              <p class="text-gray-400 text-sm">${new Date(a.completed_at).toLocaleDateString()}</p>
+            </div>
+            <span class="text-lg font-bold ${a.score >= 70 ? 'text-green-400' : 'text-red-400'}">${a.score}%</span>
+          </div>
+        `).join("");
+      } catch {
+        console.error("Failed to load attempts");
+      }
+    }
+
+    async function deleteQuiz(id) {
+      if (!confirm("Are you sure you want to delete this quiz?")) return;
+      try {
+        await fetch(`${API}/quiz/${id}`, {
+          method: "DELETE",
+          headers: authHeaders()
+        });
+        loadQuizzes();
+      } catch {
+        console.error("Failed to delete quiz");
+      }
+    }
+
+    // Load data on page load
+    loadQuizzes();
+    loadAttempts();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizGen — Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-8 py-5 border-b border-gray-800">
+    <a href="dashboard.html" class="text-2xl font-bold text-indigo-400">QuizGen</a>
+    <a href="dashboard.html" class="text-gray-400 hover:text-white text-sm transition">← Dashboard</a>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 px-8 py-10 max-w-3xl mx-auto w-full">
+
+    <!-- Score Card -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-10 text-center mb-10">
+      <p class="text-gray-400 text-sm uppercase tracking-wider mb-2">Your Score</p>
+      <p id="scoreDisplay" class="text-7xl font-extrabold mb-4"></p>
+      <p id="scoreLabel" class="text-xl font-semibold mb-2"></p>
+      <p id="scoreSummary" class="text-gray-400 text-sm mb-6"></p>
+      <p id="timeTaken" class="text-gray-600 text-sm mb-8"></p>
+      <div class="flex justify-center gap-4">
+        <a href="dashboard.html"
+          class="border border-gray-700 hover:border-gray-500 text-gray-300 px-6 py-3 rounded-lg transition">
+          Back to Dashboard
+        </a>
+        <a href="upload.html"
+          class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-semibold transition">
+          New Quiz
+        </a>
+      </div>
+    </div>
+
+    <!-- Question Breakdown -->
+    <h2 class="text-xl font-bold mb-6">Question Breakdown</h2>
+    <div id="resultsList" class="flex flex-col gap-4"></div>
+
+  </main>
+
+  <script>
+    const resultsRaw = localStorage.getItem("quizResults");
+    if (!resultsRaw) window.location.href = "dashboard.html";
+
+    const results = JSON.parse(resultsRaw);
+    const { score, correct, total, results: breakdown, questions, timeTaken } = results;
+
+    // Score display
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    scoreDisplay.textContent = `${score}%`;
+    scoreDisplay.className = `text-7xl font-extrabold mb-4 ${
+      score >= 70 ? "text-green-400" : score >= 50 ? "text-yellow-400" : "text-red-400"
+    }`;
+
+    // Score label
+    const labels = {
+      excellent: { text: "Excellent!", min: 90 },
+      good: { text: "Good Job!", min: 70 },
+      average: { text: "Keep Studying", min: 50 },
+      poor: { text: "Don't Give Up!", min: 0 }
+    };
+    const label = score >= 90 ? labels.excellent :
+                  score >= 70 ? labels.good :
+                  score >= 50 ? labels.average : labels.poor;
+
+    document.getElementById("scoreLabel").textContent = label.text;
+    document.getElementById("scoreSummary").textContent = `You got ${correct} out of ${total} questions correct.`;
+
+    // Time taken
+    if (timeTaken) {
+      const mins = Math.floor(timeTaken / 60);
+      const secs = timeTaken % 60;
+      document.getElementById("timeTaken").textContent =
+        `Time taken: ${mins > 0 ? `${mins}m ` : ""}${secs}s`;
+    }
+
+    // Question breakdown
+    const list = document.getElementById("resultsList");
+
+    // Map questions by id for easy lookup
+    const questionsMap = {};
+    (questions || []).forEach(q => { questionsMap[q.id] = q; });
+
+    list.innerHTML = (breakdown || []).map((item, index) => {
+      const q = questionsMap[item.question_id] || {};
+      return `
+        <div class="bg-gray-900 border ${item.is_correct ? 'border-green-800' : 'border-red-800'} rounded-xl p-6">
+          <div class="flex items-start gap-3 mb-3">
+            <span class="text-xl">${item.is_correct ? "✅" : "❌"}</span>
+            <div class="flex-1">
+              <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Question ${index + 1}</p>
+              <p class="font-semibold">${q.question || "Question"}</p>
+            </div>
+          </div>
+          <div class="ml-8 flex flex-col gap-1 text-sm">
+            <p class="text-gray-400">
+              Your answer:
+              <span class="${item.is_correct ? 'text-green-400' : 'text-red-400'} font-semibold">
+                ${item.your_answer || "No answer"}
+              </span>
+            </p>
+            ${!item.is_correct ? `
+              <p class="text-gray-400">
+                Correct answer:
+                <span class="text-green-400 font-semibold">${item.correct_answer}</span>
+              </p>
+            ` : ""}
+            ${item.explanation ? `
+              <p class="text-gray-500 mt-2 italic">${item.explanation}</p>
+            ` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizGen — AI-Powered Quiz Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-8 py-5 border-b border-gray-800">
+    <h1 class="text-2xl font-bold text-indigo-400">QuizGen</h1>
+    <div class="flex gap-4">
+      <a href="login.html" class="text-gray-300 hover:text-white transition">Login</a>
+      <a href="login.html#register" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <main class="flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
+    <span class="bg-indigo-900 text-indigo-300 text-sm px-4 py-1 rounded-full mb-6">Powered by Claude AI</span>
+    <h2 class="text-5xl font-extrabold leading-tight mb-6 max-w-3xl">
+      Turn Your Lecture Notes Into <span class="text-indigo-400">Smart Quizzes</span>
+    </h2>
+    <p class="text-gray-400 text-lg max-w-xl mb-10">
+      Upload your notes or paste text and let AI generate multiple-choice, true/false, and short-answer questions instantly.
+    </p>
+    <div class="flex gap-4">
+      <a href="login.html#register" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg text-lg font-semibold transition">
+        Start for Free
+      </a>
+      <a href="#features" class="border border-gray-700 hover:border-gray-500 text-gray-300 px-6 py-3 rounded-lg text-lg transition">
+        Learn More
+      </a>
+    </div>
+  </main>
+
+  <!-- Features Section -->
+  <section id="features" class="px-8 py-16 bg-gray-900">
+    <h3 class="text-3xl font-bold text-center mb-12">Why QuizGen?</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+
+      <div class="bg-gray-800 rounded-xl p-6">
+        <div class="text-indigo-400 text-3xl mb-4">🤖</div>
+        <h4 class="text-xl font-semibold mb-2">AI-Powered</h4>
+        <p class="text-gray-400">Claude AI reads your notes and generates relevant, accurate questions automatically.</p>
+      </div>
+
+      <div class="bg-gray-800 rounded-xl p-6">
+        <div class="text-indigo-400 text-3xl mb-4">📄</div>
+        <h4 class="text-xl font-semibold mb-2">PDF Support</h4>
+        <p class="text-gray-400">Upload PDF lecture notes directly. We extract the text and handle the rest.</p>
+      </div>
+
+      <div class="bg-gray-800 rounded-xl p-6">
+        <div class="text-indigo-400 text-3xl mb-4">🔗</div>
+        <h4 class="text-xl font-semibold mb-2">Share Quizzes</h4>
+        <p class="text-gray-400">Lecturers can generate a shareable link and send quizzes directly to students.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-600 py-6 border-t border-gray-800">
+    <p>QuizGen &copy; 2026 — CEC418 Project | University of Buea</p>
+  </footer>
+
+</body>
+</html>
