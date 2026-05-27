@@ -29,10 +29,12 @@ def create_app(config_name="default"):
     from app.routes.auth import auth_bp
     from app.routes.quiz import quiz_bp
     from app.routes.attempt import attempt_bp
+    from app.routes.admin import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(quiz_bp, url_prefix="/api/quiz")
     app.register_blueprint(attempt_bp, url_prefix="/api/attempt")
+    app.register_blueprint(admin_bp, url_prefix="/api/admin")
 
     # Create tables
     with app.app_context():

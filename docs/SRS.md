@@ -248,7 +248,7 @@ QuizGen is a standalone web application. It interfaces with:
 - **Model:** `claude-sonnet-4-20250514`
 - **Input:** Structured prompt containing lecture note text and question type/count instructions
 - **Output:** JSON-formatted list of questions, options, correct answers, and explanations
-- **Authentication:** API key stored as environment variable (`CLAUDE_API_KEY`)
+- **Authentication:** API key stored as environment variable (`GROQ_API_KEY`)
 
 ### 6.3 Database Interface
 - SQLAlchemy ORM used for all database interactions

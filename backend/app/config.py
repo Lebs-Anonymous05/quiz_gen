@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
@@ -9,7 +10,8 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB max upload
-    CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
 
 
 class DevelopmentConfig(Config):
@@ -21,15 +23,20 @@ class DevelopmentConfig(Config):
 
 
 class ProductionConfig(Config):
-    """Production configuration — uses PostgreSQL on Render."""
+    """Production configuration — uses PostgreSQL."""
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    db_url = os.getenv("DATABASE_URL", "")
+    SQLALCHEMY_DATABASE_URI = db_url.replace("postgres://", "postgresql://", 1) if db_url else None
+
 
 class TestingConfig(Config):
+    """Testing configuration — uses in-memory SQLite."""
     TESTING = True
+    FLASK_ENV = "testing"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     JWT_SECRET_KEY = "test-jwt-secret-key-that-is-long-enough-32chars"
     SECRET_KEY = "test-secret-key-that-is-long-enough-32chars"
+
 
 config = {
     "development": DevelopmentConfig,
