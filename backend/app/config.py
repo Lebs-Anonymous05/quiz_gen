@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
@@ -9,7 +10,8 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB max upload
-    CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+    API_KEY = os.getenv("API_KEY")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
 
 
 class DevelopmentConfig(Config):

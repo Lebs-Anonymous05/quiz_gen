@@ -76,6 +76,16 @@
     // Welcome message
     document.getElementById("welcomeMsg").textContent = `Hi, ${user.full_name || "User"}`;
 
+    // Show admin button if admin
+    if (user.role === "admin") {
+      const nav = document.querySelector("nav .flex");
+      const adminLink = document.createElement("a");
+      adminLink.href = "admin.html";
+      adminLink.className = "bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition text-sm font-semibold";
+      adminLink.textContent = "⚙ Admin";
+      nav.insertBefore(adminLink, nav.children[1]);
+    }
+
     function logout() {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
