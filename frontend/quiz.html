@@ -80,8 +80,14 @@
     if (!token) window.location.href = "login.html";
 
     const params = new URLSearchParams(window.location.search);
-    const quizId = parseInt(params.get("id"));
-    if (!quizId) window.location.href = "dashboard.html";
+    const quizId = params.get("id");
+    const shareToken = params.get("token");
+
+// If no id and no token, redirect
+    if (!quizId && !shareToken) window.location.href = "dashboard.html";
+
+// If shared token, don't require login
+    if (!shareToken && !token) window.location.href = "login.html";
 
     let questions = [];
     let currentIndex = 0;
@@ -108,7 +114,16 @@
 
     async function loadQuiz() {
       try {
-        const res = await fetch(`${API}/quiz/${quizId}`, { headers: authHeaders() });
+        let res;
+
+        if (shareToken) {
+      // Public shared quiz - no auth needed
+          res = await fetch(`${API}/quiz/shared/${shareToken}`);
+        } else {
+      // Private quiz - auth required
+          res = await fetch(`${API}/quiz/${quizId}`, { headers: authHeaders() });
+        }
+
         const data = await res.json();
 
         if (!res.ok) {

@@ -5,7 +5,8 @@ flask-bcrypt==1.0.1
 flask-cors==4.0.0
 # psycopg2-binary==2.9.9
 pymupdf==1.24.11
-anthropic==0.28.0
+# anthropic==0.28.0
+groq ==0.9.0
 python-dotenv==1.0.1
 gunicorn==22.0.0
 pytest==8.2.2
