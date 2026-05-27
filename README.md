@@ -8,7 +8,7 @@ A web-based platform that accepts lecture notes and generates AI-powered quizzes
 - **Frontend:** HTML, Tailwind CSS, JavaScript
 - **Backend:** Python 3.11, Flask, SQLAlchemy, PyMuPDF
 - **Database:** PostgreSQL (production), SQLite (development)
-- **AI/ML:** Claude API / OpenAI GPT-4
+- **AI/ML:** Claude API / OpenAI GPT-4 / groq API
 - **DevOps:** GitHub, Docker, CircleCI, Render
 
 ## Project Structure

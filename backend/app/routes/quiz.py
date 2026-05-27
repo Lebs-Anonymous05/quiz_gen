@@ -13,7 +13,7 @@ quiz_bp = Blueprint("quiz", __name__)
 @quiz_bp.route("/generate", methods=["POST"])
 @jwt_required()
 def generate():
-    """Generate a quiz from lecture notes using Claude API."""
+    """Generate a quiz from lecture notes using groq API."""
     user_id = get_jwt_identity()
     data = request.get_json()
 
@@ -31,7 +31,7 @@ def generate():
         return jsonify({"error": "At least one question type is required"}), 400
 
     try:
-        # Call Claude API
+        # Call groq API
         raw_questions = generate_quiz(source_text, question_count, question_types)
 
         # Save quiz to database

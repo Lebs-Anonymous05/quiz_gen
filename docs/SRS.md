@@ -29,12 +29,12 @@
 ## 1. Introduction
 
 ### 1.1 Purpose
-This Software Requirements Specification (SRS) defines the functional and non-functional requirements for the AI-Powered Quiz Generator — a web-based platform that accepts lecture notes from educators and students and automatically generates structured quizzes using Natural Language Processing (NLP) via the Claude API.
+This Software Requirements Specification (SRS) defines the functional and non-functional requirements for the AI-Powered Quiz Generator — a web-based platform that accepts lecture notes from educators and students and automatically generates structured quizzes using Natural Language Processing (NLP) via the groq API.
 
 ### 1.2 Scope
 The system, referred to as **QuizGen**, will:
 - Accept lecture notes in plain text or PDF format
-- Use the Claude API to generate multiple-choice, true/false, and short-answer questions
+- Use the groq API to generate multiple-choice, true/false, and short-answer questions
 - Provide an interactive quiz-taking interface with scoring and feedback
 - Allow educators to save and share quizzes with students
 - Be deployed using Docker containers on Render, with CircleCI managing the CI/CD pipeline
@@ -58,7 +58,7 @@ The system will be accessible via modern web browsers on desktop and mobile devi
 
 ### 1.4 References
 - SWEBOK Software Construction Knowledge Area (Unit 1 — CEC418)
-- Anthropic Claude API Documentation
+- groq API Documentation
 - Flask Documentation (https://flask.palletsprojects.com)
 - Docker Documentation (https://docs.docker.com)
 - CircleCI Documentation (https://circleci.com/docs)
@@ -69,7 +69,7 @@ The system will be accessible via modern web browsers on desktop and mobile devi
 
 ### 2.1 Product Perspective
 QuizGen is a standalone web application. It interfaces with:
-- The **Claude API** (Anthropic) for AI-powered question generation
+- The **groq API** for AI-powered question generation
 - A **PostgreSQL** database for persistent data storage
 - **Render** as the cloud hosting platform
 - **CircleCI** for automated testing and deployment
@@ -77,7 +77,7 @@ QuizGen is a standalone web application. It interfaces with:
 ### 2.2 Product Functions (Summary)
 - User registration and authentication (students and lecturers)
 - Lecture note upload (text and PDF)
-- AI-powered quiz generation via Claude API
+- AI-powered quiz generation via groq API
 - Interactive quiz-taking with real-time scoring
 - Quiz management dashboard (save, retake, share)
 - Educator dashboard for managing and distributing quizzes
@@ -97,7 +97,7 @@ QuizGen is a standalone web application. It interfaces with:
 - **OS:** Linux (Ubuntu) inside Docker containers
 
 ### 2.5 Design and Implementation Constraints
-- The system must use the Claude API for question generation (no custom model training)
+- The system must use the groq API for question generation (no custom model training)
 - PDF uploads are limited to 10MB
 - The backend must be built with Flask (Python)
 - All services must be containerized using Docker
@@ -129,12 +129,12 @@ QuizGen is a standalone web application. It interfaces with:
 
 | ID | Requirement |
 |----|-------------|
-| FR-09 | The system shall send extracted lecture note text to the Claude API with a structured prompt |
+| FR-09 | The system shall send extracted lecture note text to the groq API with a structured prompt |
 | FR-10 | The system shall generate multiple-choice questions (4 options, 1 correct answer) |
 | FR-11 | The system shall generate true/false questions |
 | FR-12 | The system shall generate short-answer questions |
 | FR-13 | The system shall allow users to specify the number of questions to generate (5–20) |
-| FR-14 | The system shall parse the Claude API JSON response and store questions in the database |
+| FR-14 | The system shall parse the groq API JSON response and store questions in the database |
 | FR-15 | The system shall display a loading indicator during quiz generation |
 
 ### 3.4 Quiz Taking
@@ -175,7 +175,7 @@ QuizGen is a standalone web application. It interfaces with:
 | NFR-04 | All user passwords shall be hashed using bcrypt before storage |
 | NFR-05 | All API communication shall use HTTPS |
 | NFR-06 | JWT tokens shall expire after 24 hours |
-| NFR-07 | The Claude API key shall never be exposed to the client side |
+| NFR-07 | The groq API key shall never be exposed to the client side |
 | NFR-08 | Input text shall be sanitized before being sent to the AI API |
 
 ### 4.3 Usability
@@ -192,7 +192,7 @@ QuizGen is a standalone web application. It interfaces with:
 |----|-------------|
 | NFR-12 | The system shall have an uptime of at least 99% during evaluation periods |
 | NFR-13 | Failed quiz generation attempts shall not corrupt existing user data |
-| NFR-14 | The system shall gracefully handle Claude API timeouts with a user-friendly error |
+| NFR-14 | The system shall gracefully handle groq API timeouts with a user-friendly error |
 
 ### 4.5 Maintainability
 
@@ -216,7 +216,7 @@ QuizGen is a standalone web application. It interfaces with:
 │               FLASK BACKEND (Docker)                 │
 │  ┌──────────┐  ┌──────────┐  ┌────────────────────┐ │
 │  │  Auth    │  │  Quiz    │  │   AI Service       │ │
-│  │  Routes  │  │  Routes  │  │ (Claude API calls) │ │
+│  │  Routes  │  │  Routes  │  │ (groq API calls) │ │
 │  └──────────┘  └──────────┘  └────────────────────┘ │
 │                      │                               │
 │              ┌───────▼──────┐                        │
@@ -230,8 +230,8 @@ QuizGen is a standalone web application. It interfaces with:
          └────────────────────────────┘
                        
          ┌─────────────────────────────┐
-         │        Claude API           │
-         │  (Anthropic — External)     │
+         │        groq API           │
+         │        (External)         │
          └─────────────────────────────┘
 ```
 
@@ -243,12 +243,12 @@ QuizGen is a standalone web application. It interfaces with:
 - The frontend will be built as a Single Page Application using HTML, Tailwind CSS, and Vanilla JavaScript
 - Key screens: Landing page, Register/Login, Note Upload, Quiz Generation, Quiz Taking, Results, Dashboard
 
-### 6.2 Claude API Interface
-- **Endpoint:** `https://api.anthropic.com/v1/messages`
-- **Model:** `claude-sonnet-4-20250514`
+### 6.2 Groq API Interface
+- **Endpoint:** `https://console.groq.com`
+- **Model:** `llama-3.3-70b-versatile`
 - **Input:** Structured prompt containing lecture note text and question type/count instructions
 - **Output:** JSON-formatted list of questions, options, correct answers, and explanations
-- **Authentication:** API key stored as environment variable (`CLAUDE_API_KEY`)
+- **Authentication:** API key stored as environment variable (`API_KEY`)
 
 ### 6.3 Database Interface
 - SQLAlchemy ORM used for all database interactions
@@ -266,7 +266,7 @@ QuizGen is a standalone web application. It interfaces with:
 ## 7. Constraints and Assumptions
 
 ### 7.1 Constraints
-- The system relies on the Claude API; extended API downtime will affect quiz generation
+- The system relies on the Groq API; extended API downtime will affect quiz generation
 - Free-tier hosting on Render may cause cold starts (first request after inactivity may be slow)
 - PDF text extraction quality depends on whether the PDF contains selectable text (scanned image PDFs will not extract correctly)
 
@@ -274,7 +274,7 @@ QuizGen is a standalone web application. It interfaces with:
 - Users have a stable internet connection
 - Uploaded lecture notes are in English
 - Lecturers and students have access to a modern web browser
-- The Claude API will remain available throughout the project evaluation period
+- The Groq API will remain available throughout the project evaluation period
 
 ---
 
@@ -286,8 +286,8 @@ QuizGen is a standalone web application. It interfaces with:
 |-------|--------|
 | **Actor** | Student or Lecturer |
 | **Precondition** | User is logged in |
-| **Main Flow** | 1. User navigates to the Upload page. 2. User uploads a PDF or pastes text. 3. User selects question types and count. 4. System sends content to Claude API. 5. Claude API returns structured questions. 6. System displays quiz to user. |
-| **Alternative Flow** | If Claude API times out, system displays an error and prompts the user to retry. |
+| **Main Flow** | 1. User navigates to the Upload page. 2. User uploads a PDF or pastes text. 3. User selects question types and count. 4. System sends content to Groq API. 5. Groq API returns structured questions. 6. System displays quiz to user. |
+| **Alternative Flow** | If Groq API times out, system displays an error and prompts the user to retry. |
 | **Postcondition** | Quiz is displayed and optionally saved to user dashboard. |
 
 ### UC-02: Take a Quiz
