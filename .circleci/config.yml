@@ -1,0 +1,27 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/python:3.11
+    working_directory: ~/project/backend
+    environment:
+      TESTING: "true"
+      FLASK_ENV: "testing"
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command: pip install -r requirements.txt
+      - run:
+          name: Run pytest
+          command: pytest tests/ -v --cov=app
+      - run:
+          name: Coverage report
+          command: pytest tests/ --cov=app --cov-report=term-missing
+
+workflows:
+  main:
+    jobs:
+      - test
