@@ -116,6 +116,13 @@
                 class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
                 Take Quiz
               </a>
+
+              ${user.role === "lecturer" || user.role === "admin" ? `
+                <button onclick="shareQuiz(${q.id})"
+                  class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                  🔗 Share
+                </button>
+              ` : ""}
               <button onclick="deleteQuiz(${q.id})"
                 class="border border-gray-700 hover:border-red-600 text-gray-400 hover:text-red-400 px-4 py-2 rounded-lg text-sm transition">
                 Delete
@@ -179,6 +186,29 @@
     // Load data on page load
     loadQuizzes();
     loadAttempts();
+
+
+async function shareQuiz(id) {
+  try {
+    const res = await fetch(`${API}/quiz/${id}/share`, {
+      method: "POST",
+      headers: authHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert("Failed to generate share link.");
+      return;
+    }
+    const shareUrl = `${window.location.origin}/quiz.html?token=${data.share_url.split("/shared/")[1]}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert(`Share link copied to clipboard!\n\n${shareUrl}`);
+    }).catch(() => {
+      alert(`Share this link:\n\n${shareUrl}`);
+    });
+  } catch {
+    alert("Could not connect to server.");
+  }
+}
   </script>
 
 </body>
