@@ -57,7 +57,8 @@ def create_app(config_name="default"):
     @app.route("/version")
     def version():
         import groq
-        return {"groq_version": groq.__version__}
+        import httpx
+        return {"groq_version": groq.__version__, "httpx_version": httpx.__version__}
 
     return app
 

@@ -13,7 +13,7 @@ quiz_bp = Blueprint("quiz", __name__)
 @quiz_bp.route("/generate", methods=["POST"])
 @jwt_required()
 def generate():
-    """Generate a quiz from lecture notes using Claude API."""
+    """Generate a quiz from lecture notes using Groq API."""
     user_id = get_jwt_identity()
     data = request.get_json()
 

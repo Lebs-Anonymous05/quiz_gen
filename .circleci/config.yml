@@ -21,7 +21,24 @@ jobs:
           name: Coverage report
           command: pytest tests/ --cov=app --cov-report=term-missing
 
+  deploy:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Deploy to Railway
+          command: |
+            curl -fsSL https://railway.app/install.sh | sh
+            railway up --service $RAILWAY_SERVICE_ID
+
 workflows:
   main:
     jobs:
       - test
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
