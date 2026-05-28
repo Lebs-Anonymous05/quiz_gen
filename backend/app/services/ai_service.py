@@ -11,7 +11,7 @@ def truncate_text(text: str, max_words: int = 1500) -> str:
     return text
 
 # Set this to True when you have a real API key
-USE_REAL_API = True
+USE_REAL_API = os.getenv("TESTING") != "true"
 
 
 def generate_quiz(source_text: str, question_count: int, question_types: list) -> list:
