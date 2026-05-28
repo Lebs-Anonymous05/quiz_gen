@@ -11,8 +11,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ .
 
+# Copy frontend code
+COPY frontend/ ../frontend/
+
 # Expose port
 EXPOSE 5000
 
 # Run the app with gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+
