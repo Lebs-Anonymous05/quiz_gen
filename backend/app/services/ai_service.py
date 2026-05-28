@@ -2,6 +2,7 @@ import os
 import json
 import random
 from groq import Groq
+import httpx
 
 def truncate_text(text: str, max_words: int = 1500) -> str:
     """Truncate text to stay within Groq's token limits."""
@@ -35,7 +36,8 @@ def generate_quiz(source_text: str, question_count: int, question_types: list) -
 
 def _generate_with_groq(source_text: str, question_count: int, question_types: list) -> list:
     """Call the Groq API to generate questions using LLaMA 3."""
-    client = Groq(api_key=os.getenv("API_KEY"))
+    
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"), http_client=httpx.Client())
 
     types_str = ", ".join(question_types)
     source_text = truncate_text(source_text)
