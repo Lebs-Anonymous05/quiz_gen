@@ -54,11 +54,23 @@ def create_app(config_name="default"):
     with app.app_context():
         db.create_all()
 
-    @app.route("/version")
-    def version():
-        import groq
-        import httpx
-        return {"groq_version": groq.__version__, "httpx_version": httpx.__version__}
+@app.route("/version")
+def version():
+    import groq
+    import httpx
+    try:
+        client = groq.Groq(api_key="test")
+        return {
+            "groq_version": groq.__version__,
+            "httpx_version": httpx.__version__,
+            "client_init": "success"
+        }
+    except Exception as e:
+        return {
+            "groq_version": groq.__version__,
+            "httpx_version": httpx.__version__,
+            "client_error": str(e)
+        }
 
     return app
 
