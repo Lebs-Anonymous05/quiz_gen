@@ -24,12 +24,7 @@ def create_app(config_name="default"):
     db.init_app(app)
     jwt.init_app(app)
     bcrypt.init_app(app)
-    CORS(app, origins=[
-    "https://quizgen.up.railway.app",
-    "https://quizgen-backend-production-3b8c.up.railway.app",
-    "http://127.0.0.1:5000",
-    "http://localhost:5000"
-    ])
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Register blueprints
     from app.routes.auth import auth_bp
