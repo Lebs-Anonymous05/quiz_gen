@@ -38,20 +38,21 @@ def create_app(config_name="default"):
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
 
     # Serve frontend
-    frontend_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+    frontend_path = "/frontend"
 
     @app.route("/")
     def serve_index():
-        return send_from_directory(os.path.abspath(frontend_path), "index.html")
+        return send_from_directory(frontend_path, "index.html")
 
     @app.route("/<path:path>")
     def serve_static(path):
         if path.startswith("api/"):
             return {"error": "Not found"}, 404
-        return send_from_directory(os.path.abspath(frontend_path), path)
+        return send_from_directory(frontend_path, path)
 
     # Create tables
     with app.app_context():
         db.create_all()
 
     return app
+

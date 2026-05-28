@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ .
 
-# Copy frontend code
-COPY frontend/ ../frontend/
+# Copy frontend code to parent directory
+COPY frontend/ /frontend/
 
 # Expose port
 EXPOSE 5000
