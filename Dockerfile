@@ -18,5 +18,5 @@ COPY frontend/ /frontend/
 EXPOSE 5000
 
 # Run the app with gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+CMD gunicorn --bind 0.0.0.0:${PORT:-5000} run:app
 
