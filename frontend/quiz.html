@@ -75,26 +75,31 @@
   </main>
 
   <script>
-    const API = "https://quizgen.up.railway.app/api";
-    const token = localStorage.getItem("token");
-    if (!token) window.location.href = "login.html";
+   const API = "https://quizgen.up.railway.app/api";
+   const token = localStorage.getItem("token");
 
-    const params = new URLSearchParams(window.location.search);
-    const quizId = parseInt(params.get("id"));
-    if (!quizId) window.location.href = "dashboard.html";
+   const params = new URLSearchParams(window.location.search);
+   const quizId = parseInt(params.get("id"));
+   const shareToken = params.get("token");
 
-    let questions = [];
-    let currentIndex = 0;
-    let userAnswers = {};
-    let startTime = Date.now();
-    let timerInterval = null;
+// If no id and no token, redirect
+if (!quizId && !shareToken) window.location.href = "dashboard.html";
 
-    function authHeaders() {
-      return {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      };
-    }
+// Only require login if not a shared quiz
+if (!shareToken && !token) window.location.href = "login.html";
+
+let questions = [];
+let currentIndex = 0;
+let userAnswers = {};
+let startTime = Date.now();
+let timerInterval = null;
+
+function authHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+  };
+}
 
     // Timer
     function startTimer() {
@@ -106,27 +111,34 @@
       }, 1000);
     }
 
-    async function loadQuiz() {
-      try {
-        const res = await fetch(`${API}/quiz/${quizId}`, { headers: authHeaders() });
-        const data = await res.json();
+async function loadQuiz() {
+  try {
+    let res;
 
-        if (!res.ok) {
-          window.location.href = "dashboard.html";
-          return;
-        }
-
-        questions = data.questions;
-        document.getElementById("quizTitle").textContent = data.title;
-        document.getElementById("loadingState").classList.add("hidden");
-        document.getElementById("quizContent").classList.remove("hidden");
-
-        startTimer();
-        renderQuestion();
-      } catch {
-        window.location.href = "dashboard.html";
-      }
+    if (shareToken) {
+      res = await fetch(`${API}/quiz/shared/${shareToken}`);
+    } else {
+      res = await fetch(`${API}/quiz/${quizId}`, { headers: authHeaders() });
     }
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      window.location.href = "dashboard.html";
+      return;
+    }
+
+    questions = data.questions;
+    document.getElementById("quizTitle").textContent = data.title;
+    document.getElementById("loadingState").classList.add("hidden");
+    document.getElementById("quizContent").classList.remove("hidden");
+
+    startTimer();
+    renderQuestion();
+  } catch {
+    window.location.href = "dashboard.html";
+  }
+}
 
     function renderQuestion() {
       const q = questions[currentIndex];
