@@ -54,5 +54,10 @@ def create_app(config_name="default"):
     with app.app_context():
         db.create_all()
 
+    @app.route("/version")
+    def version():
+        import groq
+        return {"groq_version": groq.__version__}
+
     return app
 
