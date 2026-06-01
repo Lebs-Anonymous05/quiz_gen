@@ -216,7 +216,7 @@ QuizGen is a standalone web application. It interfaces with:
 │               FLASK BACKEND (Docker)                 │
 │  ┌──────────┐  ┌──────────┐  ┌────────────────────┐ │
 │  │  Auth    │  │  Quiz    │  │   AI Service       │ │
-│  │  Routes  │  │  Routes  │  │ (Claude API calls) │ │
+│  │  Routes  │  │  Routes  │  │ (Groq API calls) │ │
 │  └──────────┘  └──────────┘  └────────────────────┘ │
 │                      │                               │
 │              ┌───────▼──────┐                        │
@@ -230,8 +230,8 @@ QuizGen is a standalone web application. It interfaces with:
          └────────────────────────────┘
                        
          ┌─────────────────────────────┐
-         │        Claude API           │
-         │  (Anthropic — External)     │
+         │        Groq API             │
+         │  (LLaMA — External)         │
          └─────────────────────────────┘
 ```
 
@@ -243,9 +243,9 @@ QuizGen is a standalone web application. It interfaces with:
 - The frontend will be built as a Single Page Application using HTML, Tailwind CSS, and Vanilla JavaScript
 - Key screens: Landing page, Register/Login, Note Upload, Quiz Generation, Quiz Taking, Results, Dashboard
 
-### 6.2 Claude API Interface
-- **Endpoint:** `https://api.anthropic.com/v1/messages`
-- **Model:** `claude-sonnet-4-20250514`
+### 6.2 Groq API Interface
+- **Endpoint:** `console.groq.com`
+- **Model:** `LLaMA 3.3 70B`
 - **Input:** Structured prompt containing lecture note text and question type/count instructions
 - **Output:** JSON-formatted list of questions, options, correct answers, and explanations
 - **Authentication:** API key stored as environment variable (`GROQ_API_KEY`)
@@ -266,7 +266,7 @@ QuizGen is a standalone web application. It interfaces with:
 ## 7. Constraints and Assumptions
 
 ### 7.1 Constraints
-- The system relies on the Claude API; extended API downtime will affect quiz generation
+- The system relies on the Groq API; extended API downtime will affect quiz generation
 - Free-tier hosting on Render may cause cold starts (first request after inactivity may be slow)
 - PDF text extraction quality depends on whether the PDF contains selectable text (scanned image PDFs will not extract correctly)
 
@@ -274,7 +274,7 @@ QuizGen is a standalone web application. It interfaces with:
 - Users have a stable internet connection
 - Uploaded lecture notes are in English
 - Lecturers and students have access to a modern web browser
-- The Claude API will remain available throughout the project evaluation period
+- The Groq API will remain available throughout the project evaluation period
 
 ---
 
@@ -286,8 +286,8 @@ QuizGen is a standalone web application. It interfaces with:
 |-------|--------|
 | **Actor** | Student or Lecturer |
 | **Precondition** | User is logged in |
-| **Main Flow** | 1. User navigates to the Upload page. 2. User uploads a PDF or pastes text. 3. User selects question types and count. 4. System sends content to Claude API. 5. Claude API returns structured questions. 6. System displays quiz to user. |
-| **Alternative Flow** | If Claude API times out, system displays an error and prompts the user to retry. |
+| **Main Flow** | 1. User navigates to the Upload page. 2. User uploads a PDF or pastes text. 3. User selects question types and count. 4. System sends content to Groq API. 5. Groq API returns structured questions. 6. System displays quiz to user. |
+| **Alternative Flow** | If Groq API times out, system displays an error and prompts the user to retry. |
 | **Postcondition** | Quiz is displayed and optionally saved to user dashboard. |
 
 ### UC-02: Take a Quiz

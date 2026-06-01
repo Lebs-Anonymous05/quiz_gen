@@ -31,7 +31,7 @@ def generate():
         return jsonify({"error": "At least one question type is required"}), 400
 
     try:
-        # Call Claude API
+        # Call Groq API
         raw_questions = generate_quiz(source_text, question_count, question_types)
 
         # Save quiz to database

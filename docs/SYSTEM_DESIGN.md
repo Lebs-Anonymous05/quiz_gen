@@ -18,7 +18,7 @@
 1. [Architecture Overview](#1-architecture-overview)
 2. [Database Schema](#2-database-schema)
 3. [API Endpoint Design](#3-api-endpoint-design)
-4. [Claude API Integration Design](#4-claude-api-integration-design)
+4. [Groq API Integration Design](#4-groq-api-integration-design)
 5. [DevOps Pipeline Design](#5-devops-pipeline-design)
 6. [Folder Structure](#6-folder-structure)
 
@@ -38,10 +38,10 @@ QuizGen follows a **3-tier architecture**:
 ┌─────────────────────▼───────────────────────────────────┐
 │                   APPLICATION TIER                       │
 │              Flask (Python 3.11) — Docker                │
-│  ┌───────────┐  ┌────────────┐  ┌─────────────────────┐ │
+│  ┌───────────┐  ┌────────────┐  ┌─────────────────────┐  │
 │  │   Auth    │  │    Quiz    │  │    AI Service        │ │
-│  │  Module   │  │   Module   │  │  (Claude API calls)  │ │
-│  └───────────┘  └────────────┘  └─────────────────────┘ │
+│  │  Module   │  │   Module   │  │  (Groq API calls)    │ │
+│  └───────────┘  └────────────┘  └─────────────────────┘  │
 │                        │                                 │
 │               ┌────────▼───────┐                         │
 │               │  SQLAlchemy    │                         │
@@ -56,8 +56,8 @@ QuizGen follows a **3-tier architecture**:
 
               ┌──────────────────────────────┐
               │       EXTERNAL SERVICE        │
-              │  Claude API (Anthropic)        │
-              │  api.anthropic.com/v1/messages │
+              │  Groq API (LLaMA)        │
+              │  console.groq.com        │
               └──────────────────────────────┘
 ```
 
@@ -69,7 +69,7 @@ QuizGen follows a **3-tier architecture**:
 | Backend | Flask (Python 3.11) | Business logic, routing, auth, AI orchestration |
 | ORM | SQLAlchemy | Database abstraction, model definitions |
 | Database | PostgreSQL | Persistent data storage |
-| AI Service | Claude API | Natural language question generation |
+| AI Service | Groq API | Natural language question generation |
 | Container | Docker | Environment consistency across dev and prod |
 | CI/CD | CircleCI | Automated testing and deployment |
 | Hosting | Render | Cloud deployment and serving |
@@ -452,11 +452,11 @@ Get all quiz attempts by the authenticated user. 🔒 Protected
 
 ---
 
-## 4. Claude API Integration Design
+## 4. Groq API Integration Design
 
 ### 4.1 Prompt Structure
 
-The AI Service module sends the following structured prompt to Claude:
+The AI Service module sends the following structured prompt to Groq:
 
 ```
 You are a quiz generator. Given the lecture notes below, generate exactly {count} questions.
@@ -517,7 +517,7 @@ Return quiz to user
 | Scenario | Handling |
 |----------|----------|
 | API timeout (>15s) | Return 504 with retry message |
-| Invalid JSON from Claude | Retry once with stricter prompt |
+| Invalid JSON from Groq | Retry once with stricter prompt |
 | API key missing | Return 500, log error server-side |
 | Rate limit exceeded | Return 429 with wait time message |
 
@@ -619,7 +619,7 @@ quiz_gen/
 │   │   │   ├── quiz.py     ← /api/quiz endpoints
 │   │   │   └── attempt.py  ← /api/attempt endpoints
 │   │   └── services/
-│   │       ├── ai_service.py    ← Claude API integration
+│   │       ├── ai_service.py    ← Groq API integration
 │   │       └── pdf_service.py   ← PDF text extraction
 │   ├── tests/
 │   │   ├── test_auth.py
